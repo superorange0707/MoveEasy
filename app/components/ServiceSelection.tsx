@@ -22,78 +22,92 @@ type ServiceSelectionProps = {
 };
 
 export default function ServiceSelection({ onSubmit }: ServiceSelectionProps) {
-  // Sample service data structure
+  // Sample service data structure with UK-specific providers
   const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>([
     {
       id: 'utilities',
       name: 'Utilities',
       services: [
         {
-          id: 'electric',
-          name: 'Electricity Provider',
+          id: 'british-gas',
+          name: 'British Gas',
           category: 'utilities',
-          description: 'Update your electricity service provider with your new address',
+          description: 'Update your gas and electricity account with your new address',
           selected: false,
         },
         {
-          id: 'water',
-          name: 'Water Service',
+          id: 'thames-water',
+          name: 'Thames Water',
           category: 'utilities',
-          description: 'Update your water service provider with your new address',
+          description: 'Update your water service account with your new address',
           selected: false,
         },
         {
-          id: 'gas',
-          name: 'Gas Provider',
+          id: 'scottish-power',
+          name: 'Scottish Power',
           category: 'utilities',
-          description: 'Update your gas provider with your new address',
+          description: 'Update your energy account with your new address',
+          selected: false,
+        },
+        {
+          id: 'bt',
+          name: 'BT',
+          category: 'utilities',
+          description: 'Update your broadband and phone services with your new address',
           selected: false,
         },
       ],
     },
     {
       id: 'postal',
-      name: 'Postal Services',
+      name: 'Postal & Delivery Services',
       services: [
         {
-          id: 'usps',
-          name: 'USPS Mail Forwarding',
+          id: 'royal-mail',
+          name: 'Royal Mail Redirection',
           category: 'postal',
-          description: 'Set up mail forwarding with the United States Postal Service',
+          description: 'Set up mail redirection service with Royal Mail',
           selected: false,
         },
         {
-          id: 'ups',
-          name: 'UPS Address Update',
+          id: 'parcelforce',
+          name: 'Parcelforce',
           category: 'postal',
-          description: 'Update your address with UPS',
+          description: 'Update your delivery preferences with Parcelforce',
           selected: false,
         },
       ],
     },
     {
       id: 'financial',
-      name: 'Financial Institutions',
+      name: 'Financial Services',
       services: [
         {
-          id: 'bank',
-          name: 'Banking Services',
+          id: 'hmrc',
+          name: 'HMRC',
           category: 'financial',
-          description: 'Update your address with your bank',
+          description: 'Update your address with HM Revenue & Customs',
           selected: false,
         },
         {
-          id: 'creditcard',
-          name: 'Credit Card Companies',
+          id: 'lloyds',
+          name: 'Lloyds Bank',
           category: 'financial',
-          description: 'Update your address with your credit card providers',
+          description: 'Update your address with Lloyds Bank',
           selected: false,
         },
         {
-          id: 'insurance',
-          name: 'Insurance Providers',
+          id: 'barclays',
+          name: 'Barclays',
           category: 'financial',
-          description: 'Update your address with your insurance companies',
+          description: 'Update your address with Barclays Bank',
+          selected: false,
+        },
+        {
+          id: 'nationwide',
+          name: 'Nationwide',
+          category: 'financial',
+          description: 'Update your address with Nationwide Building Society',
           selected: false,
         },
       ],
@@ -103,17 +117,58 @@ export default function ServiceSelection({ onSubmit }: ServiceSelectionProps) {
       name: 'Government Services',
       services: [
         {
-          id: 'dmv',
-          name: 'DMV/Vehicle Registration',
+          id: 'dvla',
+          name: 'DVLA',
           category: 'govt',
-          description: "Update your driver\'s license and vehicle registration",
+          description: "Update your driving licence and vehicle registration",
           selected: false,
         },
         {
-          id: 'tax',
-          name: 'Tax Authorities',
+          id: 'electoral',
+          name: 'Electoral Register',
           category: 'govt',
-          description: 'Update your address with federal and state tax authorities',
+          description: 'Update your electoral roll registration',
+          selected: false,
+        },
+        {
+          id: 'council',
+          name: 'Local Council',
+          category: 'govt',
+          description: 'Update your address with your local council for council tax and services',
+          selected: false,
+        },
+        {
+          id: 'nhs',
+          name: 'NHS',
+          category: 'govt',
+          description: 'Update your address with your GP and NHS services',
+          selected: false,
+        },
+      ],
+    },
+    {
+      id: 'insurance',
+      name: 'Insurance Services',
+      services: [
+        {
+          id: 'aviva',
+          name: 'Aviva Insurance',
+          category: 'insurance',
+          description: 'Update your home and car insurance policies',
+          selected: false,
+        },
+        {
+          id: 'axa',
+          name: 'AXA Insurance',
+          category: 'insurance',
+          description: 'Update your insurance policies with AXA',
+          selected: false,
+        },
+        {
+          id: 'direct-line',
+          name: 'Direct Line',
+          category: 'insurance',
+          description: 'Update your insurance policies with Direct Line',
           selected: false,
         },
       ],
@@ -143,61 +198,60 @@ export default function ServiceSelection({ onSubmit }: ServiceSelectionProps) {
   };
 
   const handleSubmit = () => {
-    const selectedServices = serviceCategories
-      .flatMap(category => category.services)
-      .filter(service => service.selected);
-    
+    const selectedServices = serviceCategories.flatMap(category =>
+      category.services.filter(service => service.selected)
+    );
     onSubmit(selectedServices);
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-semibold mb-6">Select Services to Update</h2>
-      
-      <div className="mb-8">
-        <p className="text-gray-600">
-          Select the services you would like to update with your new address. We'll help you update each one efficiently.
-        </p>
-      </div>
-      
-      <div className="space-y-8">
+    <div className="space-y-6">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
         {serviceCategories.map(category => (
-          <div key={category.id} className="border-b pb-6">
-            <h3 className="text-xl font-medium mb-4">{category.name}</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              {category.services.map(service => (
-                <div 
-                  key={service.id}
-                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                    service.selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
-                  }`}
-                  onClick={() => toggleServiceSelection(category.id, service.id)}
-                >
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      checked={service.selected}
-                      onChange={() => toggleServiceSelection(category.id, service.id)}
-                      className="h-5 w-5 text-blue-600 mt-1"
-                    />
-                    <div className="ml-3">
-                      <h4 className="font-medium">{service.name}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+          <div key={category.id} className="border-b last:border-b-0">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-4">{category.name}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {category.services.map(service => (
+                  <div
+                    key={service.id}
+                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                      service.selected
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300'
+                    }`}
+                    onClick={() => toggleServiceSelection(category.id, service.id)}
+                  >
+                    <div className="flex items-start">
+                      <div className="flex-1">
+                        <h3 className="font-medium">{service.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {service.description}
+                        </p>
+                      </div>
+                      <div className="ml-4">
+                        <input
+                          type="checkbox"
+                          checked={service.selected}
+                          onChange={() => toggleServiceSelection(category.id, service.id)}
+                          className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         ))}
       </div>
-      
-      <div className="mt-8 flex justify-end">
+
+      <div className="flex justify-end">
         <button
           onClick={handleSubmit}
-          className="bg-blue-600 py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          Continue with Selected Services
+          Continue
         </button>
       </div>
     </div>

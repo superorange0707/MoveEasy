@@ -1,19 +1,20 @@
-# MoveEasy - Address Change Assistant
+# MoveEasy - UK Address Change Assistant
 
-MoveEasy is a modern web application built with Next.js that helps users manage their address changes when moving to a new home. It provides a streamlined interface for updating addresses across multiple service providers, tracking progress, and managing notifications.
+MoveEasy is a modern web application built with Next.js that helps UK residents manage their address changes when moving to a new home. It provides a streamlined interface for updating addresses across multiple UK service providers, tracking progress, and managing notifications.
 
 ## Features
 
-- **Multi-step Address Change Process**
-  - Easy-to-use form for entering old and new addresses
-  - Intelligent service provider recommendations
-  - Progress tracking for each service update
+- **UK-Specific Address Management**
+  - Postcode lookup functionality for accurate address entry
+  - Integration with UK address databases
+  - Support for UK address formats
 
 - **Service Provider Integration**
-  - Support for utilities (electricity, water, gas)
-  - Postal services (USPS, UPS, FedEx)
-  - Financial institutions (banks, credit cards)
-  - Government services (DMV, tax authorities)
+  - Support for major UK utilities (British Gas, Thames Water, etc.)
+  - Royal Mail redirection service
+  - UK government services (DVLA, Electoral Register, Council Tax)
+  - UK financial institutions (HMRC, major UK banks)
+  - UK insurance providers
 
 - **Smart Dashboard**
   - Real-time progress tracking
@@ -34,6 +35,7 @@ MoveEasy is a modern web application built with Next.js that helps users manage 
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks
 - **UI Components**: Custom components with Tailwind
+- **Address Lookup**: Integration with UK postcode lookup services
 
 ## Getting Started
 
@@ -48,12 +50,21 @@ MoveEasy is a modern web application built with Next.js that helps users manage 
    npm install
    ```
 
-3. **Run the development server**
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Add your postcode lookup API key to `.env.local`:
+   ```
+   POSTCODE_LOOKUP_API_KEY=your_api_key_here
+   ```
+
+4. **Run the development server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser**
+5. **Open your browser**
    Navigate to `http://localhost:3000`
 
 ## Project Structure
@@ -65,6 +76,7 @@ moveeasy/
 │   ├── dashboard/         # Dashboard page
 │   ├── services/          # Services page
 │   ├── settings/          # Settings page
+│   ├── api/               # API routes
 │   ├── layout.tsx         # Root layout
 │   └── page.tsx           # Home page
 ├── public/                # Static assets
@@ -75,9 +87,9 @@ moveeasy/
 
 ## Key Components
 
-- **NavBar**: Main navigation component
-- **AddressForm**: Multi-step form for address input
-- **ServiceSelection**: Service provider selection interface
+- **UKAddressLookup**: Postcode-based address lookup component
+- **AddressForm**: Multi-step form for address input with postcode lookup
+- **ServiceSelection**: UK service provider selection interface
 - **ProgressTracker**: Visual progress tracking component
 - **ChatInterface**: Real-time chat support interface
 - **AccountManagement**: Account settings and security management
@@ -89,14 +101,40 @@ moveeasy/
 - **Component Structure**: Each component is self-contained with its own types and styles
 - **State Management**: React hooks for local state, context for global state
 
+## UK Service Providers
+
+The application supports address updates with the following UK service providers:
+
+### Utilities
+- British Gas
+- Thames Water
+- Scottish Power
+- BT
+
+### Government
+- DVLA (Driver and Vehicle Licensing Agency)
+- Electoral Register
+- Local Council Services
+- NHS
+
+### Financial Services
+- HMRC
+- Major UK Banks (Lloyds, Barclays, Nationwide)
+- Insurance Providers (Aviva, AXA, Direct Line)
+
+### Postal Services
+- Royal Mail Redirection
+- Parcelforce
+
 ## Future Enhancements
 
-- [ ] Integration with more service providers
+- [ ] Integration with more UK service providers
 - [ ] Mobile app development
 - [ ] AI-powered address verification
 - [ ] Automated service provider updates
 - [ ] Enhanced analytics and reporting
-- [ ] Multi-language support
+- [ ] Support for business address changes
+- [ ] Integration with UK property databases
 
 ## Contributing
 
@@ -112,4 +150,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support, email support@moveeasy.com or open an issue in the GitHub repository. 
+For support, email support@moveeasy.co.uk or open an issue in the GitHub repository. 
