@@ -1,21 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-
-type Address = {
-  line1: string;
-  line2?: string;
-  town: string;
-  county?: string;
-  postcode: string;
-  building_number?: string;
-  building_name?: string;
-  sub_building_name?: string;
-  thoroughfare?: string;
-};
+import { Address } from '@/lib/db/schema';
 
 type UKAddressLookupProps = {
-  onAddressSelect: (address: Address) => void;
+  onAddressSelect: (address: Partial<Address>) => void;
   className?: string;
 };
 
@@ -25,7 +14,7 @@ const API_URL = 'https://api.ideal-postcodes.co.uk/v1';
 
 export default function UKAddressLookup({ onAddressSelect, className = '' }: UKAddressLookupProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addresses, setAddresses] = useState<Partial<Address>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -65,14 +54,11 @@ export default function UKAddressLookup({ onAddressSelect, className = '' }: UKA
           hit.building_number,
           hit.thoroughfare
         ].filter(Boolean).join(', '),
-        line2: hit.dependent_thoroughfare || '',
+        line2: hit.dependent_thoroughfare || undefined,
         town: hit.post_town || '',
-        county: hit.county || '',
+        county: hit.county || undefined,
         postcode: hit.postcode || '',
-        building_number: hit.building_number,
-        building_name: hit.building_name,
-        sub_building_name: hit.sub_building_name,
-        thoroughfare: hit.thoroughfare
+        country: 'UK',
       }));
 
       setAddresses(formattedAddresses);
@@ -92,7 +78,7 @@ export default function UKAddressLookup({ onAddressSelect, className = '' }: UKA
     searchAddress(value);
   };
 
-  const handleAddressSelect = (address: Address) => {
+  const handleAddressSelect = (address: Partial<Address>) => {
     onAddressSelect(address);
     setSearchTerm('');
     setAddresses([]);
@@ -138,12 +124,10 @@ export default function UKAddressLookup({ onAddressSelect, className = '' }: UKA
                 >
                   <p className="text-sm text-gray-900">
                     {[
-                      address.sub_building_name,
-                      address.building_name,
-                      address.building_number,
-                      address.thoroughfare,
+                      address.line1,
                       address.line2,
                       address.town,
+                      address.county,
                       address.postcode
                     ].filter(Boolean).join(', ')}
                   </p>
@@ -163,7 +147,8 @@ export default function UKAddressLookup({ onAddressSelect, className = '' }: UKA
                 line2: '',
                 town: '',
                 county: '',
-                postcode: ''
+                postcode: '',
+                country: 'UK',
               })}
               className="text-blue-600 hover:text-blue-800"
             >

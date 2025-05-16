@@ -8,5 +8,8 @@
     "build": "cd app && npm run build",
     "start": "cd app && npm run start",
     "lint": "cd app && npm run lint"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0"
   }
-} 
+}

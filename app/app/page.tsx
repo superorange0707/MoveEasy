@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import NavBar from '../components/NavBar';
+import { Address } from '@/lib/db/schema';
 
 // Dynamically import components with SSR disabled
 const AddressForm = dynamic(() => import('../components/AddressForm'), { ssr: false });
@@ -10,22 +11,14 @@ const ChatInterface = dynamic(() => import('../components/ChatInterface'), { ssr
 const ServiceSelection = dynamic(() => import('../components/ServiceSelection'), { ssr: false });
 const ProgressTracker = dynamic(() => import('../components/ProgressTracker'), { ssr: false });
 
-type Address = {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  additionalInfo?: string;
-};
+type Step = 'intro' | 'address' | 'services' | 'progress';
 
 type Service = {
   id: string;
   name: string;
   category: string;
-  logo?: string;
-  description: string;
-  selected: boolean;
+  reference?: string;
+  credentials?: Record<string, string>;
 };
 
 type ServiceStatus = {
@@ -37,73 +30,20 @@ type ServiceStatus = {
   lastUpdated: Date;
 };
 
-type Step = 'intro' | 'address' | 'services' | 'progress';
-
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<Step>('intro');
-  const [addresses, setAddresses] = useState<{ currentAddress: Address; newAddress: Address } | null>(null);
+  const [addresses, setAddresses] = useState<{ oldAddress: Address; newAddress: Address } | null>(null);
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [serviceStatuses, setServiceStatuses] = useState<ServiceStatus[]>([]);
 
-  const handleAddressSubmit = (data: { currentAddress: Address; newAddress: Address }) => {
-    setAddresses(data);
+  const handleAddressSubmit = (oldAddress: Address, newAddress: Address) => {
+    setAddresses({ oldAddress, newAddress });
     setCurrentStep('services');
   };
 
   const handleServiceSelection = (services: Service[]) => {
     setSelectedServices(services);
-    
-    // Create initial service statuses
-    const statuses = services.map(service => ({
-      id: service.id,
-      name: service.name,
-      category: service.category,
-      status: 'pending' as const,
-      lastUpdated: new Date(),
-    }));
-    
-    setServiceStatuses(statuses);
     setCurrentStep('progress');
-    
-    // Simulate service updates
-    simulateServiceUpdates(statuses);
-  };
-  
-  // Temporary function to simulate service updates
-  const simulateServiceUpdates = (statuses: ServiceStatus[]) => {
-    const updateQueue = [...statuses];
-    
-    const processNext = () => {
-      if (updateQueue.length === 0) return;
-      
-      const service = updateQueue.shift();
-      if (!service) return;
-      
-      // Randomly determine success or failure
-      const success = Math.random() > 0.2;
-      
-      setTimeout(() => {
-        setServiceStatuses(prev => 
-          prev.map(s => {
-            if (s.id === service.id) {
-              return {
-                ...s,
-                status: success ? 'completed' : 'failed',
-                message: success 
-                  ? 'Successfully updated address' 
-                  : 'Failed to update. Please try again.',
-                lastUpdated: new Date(),
-              };
-            }
-            return s;
-          })
-        );
-        
-        processNext();
-      }, 2000 + Math.random() * 3000); // Random delay between 2-5 seconds
-    };
-    
-    processNext();
   };
 
   const renderStep = () => {
@@ -138,10 +78,16 @@ export default function Home() {
         return <AddressForm onSubmit={handleAddressSubmit} />;
         
       case 'services':
-        return <ServiceSelection onSubmit={handleServiceSelection} />;
+        return addresses ? (
+          <ServiceSelection
+            onSubmit={handleServiceSelection}
+            oldAddress={addresses.oldAddress}
+            newAddress={addresses.newAddress}
+          />
+        ) : null;
         
       case 'progress':
-        return <ProgressTracker services={serviceStatuses} />;
+        return <ProgressTracker services={selectedServices} />;
         
       default:
         return null;

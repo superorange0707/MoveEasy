@@ -2,14 +2,7 @@
 
 import { useState } from 'react';
 import UKAddressLookup from './UKAddressLookup';
-
-type Address = {
-  line1: string;
-  line2?: string;
-  town: string;
-  county?: string;
-  postcode: string;
-};
+import { Address } from '@/lib/db/schema';
 
 type AddressFormProps = {
   onSubmit: (oldAddress: Address, newAddress: Address) => void;
@@ -24,116 +17,49 @@ export default function AddressForm({ onSubmit }: AddressFormProps) {
   const handleManualSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const address: Address = {
+    const address: Partial<Address> = {
+      id: crypto.randomUUID(),
       line1: formData.get('line1') as string,
       line2: formData.get('line2') as string || undefined,
       town: formData.get('town') as string,
       county: formData.get('county') as string || undefined,
       postcode: formData.get('postcode') as string,
+      country: 'UK',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     if (step === 'old') {
-      setOldAddress(address);
+      setOldAddress(address as Address);
       setStep('new');
     } else {
-      setNewAddress(address);
+      setNewAddress(address as Address);
       if (oldAddress) {
-        onSubmit(oldAddress, address);
+        onSubmit(oldAddress, address as Address);
       }
     }
   };
 
-  const renderManualForm = () => (
-    <form onSubmit={handleManualSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="line1" className="block text-sm font-medium text-gray-700">
-          Address Line 1
-        </label>
-        <input
-          type="text"
-          name="line1"
-          id="line1"
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
-        />
-      </div>
+  const handleAddressSelect = (address: Partial<Address>) => {
+    const fullAddress: Address = {
+      id: crypto.randomUUID(),
+      line1: address.line1 || '',
+      line2: address.line2,
+      town: address.town || '',
+      county: address.county,
+      postcode: address.postcode || '',
+      country: 'UK',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-      <div>
-        <label htmlFor="line2" className="block text-sm font-medium text-gray-700">
-          Address Line 2 (Optional)
-        </label>
-        <input
-          type="text"
-          name="line2"
-          id="line2"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="town" className="block text-sm font-medium text-gray-700">
-          Town/City
-        </label>
-        <input
-          type="text"
-          name="town"
-          id="town"
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="county" className="block text-sm font-medium text-gray-700">
-          County (Optional)
-        </label>
-        <input
-          type="text"
-          name="county"
-          id="county"
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="postcode" className="block text-sm font-medium text-gray-700">
-          Postcode
-        </label>
-        <input
-          type="text"
-          name="postcode"
-          id="postcode"
-          required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
-        />
-      </div>
-
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={() => setIsManualEntry(false)}
-          className="text-blue-600 hover:text-blue-800"
-        >
-          Use Postcode Lookup
-        </button>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          {step === 'old' ? 'Continue to New Address' : 'Submit'}
-        </button>
-      </div>
-    </form>
-  );
-
-  const handleAddressSelect = (address: Address) => {
     if (step === 'old') {
-      setOldAddress(address);
+      setOldAddress(fullAddress);
       setStep('new');
     } else {
-      setNewAddress(address);
+      setNewAddress(fullAddress);
       if (oldAddress) {
-        onSubmit(oldAddress, address);
+        onSubmit(oldAddress, fullAddress);
       }
     }
   };
@@ -166,7 +92,86 @@ export default function AddressForm({ onSubmit }: AddressFormProps) {
         </div>
 
         {isManualEntry ? (
-          renderManualForm()
+          <form onSubmit={handleManualSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="line1" className="block text-sm font-medium text-gray-700">
+                Address Line 1
+              </label>
+              <input
+                type="text"
+                name="line1"
+                id="line1"
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="line2" className="block text-sm font-medium text-gray-700">
+                Address Line 2 (Optional)
+              </label>
+              <input
+                type="text"
+                name="line2"
+                id="line2"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="town" className="block text-sm font-medium text-gray-700">
+                Town/City
+              </label>
+              <input
+                type="text"
+                name="town"
+                id="town"
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="county" className="block text-sm font-medium text-gray-700">
+                County (Optional)
+              </label>
+              <input
+                type="text"
+                name="county"
+                id="county"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="postcode" className="block text-sm font-medium text-gray-700">
+                Postcode
+              </label>
+              <input
+                type="text"
+                name="postcode"
+                id="postcode"
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
+              />
+            </div>
+
+            <div className="flex justify-between">
+              <button
+                type="button"
+                onClick={() => setIsManualEntry(false)}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                Use Postcode Lookup
+              </button>
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                {step === 'old' ? 'Continue to New Address' : 'Submit'}
+              </button>
+            </div>
+          </form>
         ) : (
           <div>
             <UKAddressLookup onAddressSelect={handleAddressSelect} />
@@ -182,7 +187,7 @@ export default function AddressForm({ onSubmit }: AddressFormProps) {
           </div>
         )}
 
-        {step === 'new' && (
+        {step === 'new' && oldAddress && (
           <div className="mt-6 pt-6 border-t">
             <div className="flex items-center">
               <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full bg-green-100 text-green-600">
@@ -191,9 +196,9 @@ export default function AddressForm({ onSubmit }: AddressFormProps) {
               <div className="ml-4">
                 <h3 className="text-lg font-medium text-gray-900">Current Address</h3>
                 <p className="text-gray-700">
-                  {oldAddress?.line1}
-                  {oldAddress?.line2 ? `, ${oldAddress.line2}` : ''}, {oldAddress?.town},{' '}
-                  {oldAddress?.postcode}
+                  {oldAddress.line1}
+                  {oldAddress.line2 ? `, ${oldAddress.line2}` : ''}, {oldAddress.town},{' '}
+                  {oldAddress.postcode}
                 </p>
               </div>
             </div>

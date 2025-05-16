@@ -1,212 +1,150 @@
-# MoveEasy - Address Change Assistant
+# MoveEasy Technical Requirements
 
-## Project Overview
-MoveEasy is an intelligent assistant that helps users manage their address changes when moving to a new home. The system automates the process of updating addresses across various services, reducing the manual effort required during relocation.
+## Overview
+MoveEasy is a service that helps users update their address across multiple service providers in the UK. The system uses a combination of APIs (where available) and automated web form filling (RPA) to assist users in updating their addresses.
 
-## Core Features
-1. Interactive Chatbot Interface
-   - User-friendly chat interface
-   - Natural language processing for understanding user requests
-   - Address validation and verification
-   - Service recommendation engine
+## Core Components
 
-2. Service Management
-   - Comprehensive service directory
-   - Popular service categories:
-     - Utilities (electricity, water, gas)
-     - Postal services
-     - Banking and financial institutions
-     - Government services
-     - Subscription services
-     - Insurance providers
+### 1. Frontend Interface
+- Next.js based web application
+- User-friendly interface for address input and service selection
+- Real-time status tracking
+- Responsive design for all devices
 
-3. Automation Capabilities
-   - API integration with available services
-   - RPA (Robotic Process Automation) for services without APIs
-   - Automated form filling
-   - Status tracking for each service update
+### 2. Service Integration Layer
+#### 2.1 API Integration
+- Direct API integration for services that provide public APIs
+- Secure credential management
+- Rate limiting and error handling
+
+#### 2.2 RPA Integration (New)
+- Browser automation framework (Playwright/Puppeteer)
+- AI-powered DOM analysis for form identification
+- Form filling automation
+- Screenshot capture for verification
+- Error detection and recovery
+- Semi-automated mode with user verification steps
+
+### 3. AI Components
+- DOM structure analysis for identifying form fields
+- Natural language processing for understanding form labels
+- Visual element recognition for complex forms
+- Adaptive learning from user corrections
+
+### 4. Security & Compliance
+- No storage of sensitive credentials
+- User verification for critical steps
+- Audit logging of all actions
+- GDPR compliance
+- Data encryption in transit and at rest
+
+## Service Provider Integration Types
+
+### Type 1: API-Based Services
+- Direct API integration
+- Full automation capability
+- Automated status checking
+- Example: Royal Mail Redirection API
+
+### Type 2: Semi-Automated Web Services
+- RPA-based form filling
+- User verification required for submission
+- Screenshot-based verification
+- Examples: Banking services, utility providers
+
+### Type 3: Manual Assistance Services
+- Guide generation for manual updates
+- Form pre-filling
+- PDF generation for postal submissions
+- Examples: Government services, some insurance providers
 
 ## Technical Architecture
 
 ### Frontend
-1. Technology Stack
-   - Next.js/React for web application
-   - Tailwind CSS for styling
-   - TypeScript for type safety
-   - WebSocket for real-time chat
-
-2. Key Components
-   - Chat interface
-   - Address input form
-   - Service selection dashboard
-   - Progress tracking interface
-
-
+- Next.js
+- React
+- TailwindCSS
+- TypeScript
 
 ### Backend
-1. Core Technologies
-   - Node.js/Express.js
-   - MongoDB for data storage
-   - Redis for caching
-   - Docker for containerization
+- Node.js
+- TypeScript
+- Playwright/Puppeteer for web automation
+- AI services integration
+- PostgreSQL database
 
-2. Key Services
-   - Authentication service
-   - Chat service
-   - Address validation service
-   - Service integration manager
-   - RPA orchestrator
+### AI/ML Components
+- Form field recognition models
+- DOM structure analysis
+- Error detection and recovery
+- Learning from user corrections
 
-### Integration Layer
-1. API Integration
-   - RESTful APIs
-   - GraphQL where applicable
-   - OAuth2.0 for authentication
+### Security
+- End-to-end encryption
+- Secure credential handling
+- Session management
+- Audit logging
 
-2. RPA Framework
-   - Selenium/Playwright for web automation
-   - Task queue system
-   - Error handling and recovery
+## Service Integration Process
 
-## Data Models
+### 1. Service Analysis Phase
+- Website structure analysis
+- Form field identification
+- Required data mapping
+- Error case identification
+- User verification points identification
 
-### User
-```typescript
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  currentAddress: Address;
-  newAddress: Address;
-  serviceUpdates: ServiceUpdate[];
-}
-```
+### 2. Automation Implementation
+- Form filling script development
+- Error handling implementation
+- Screenshot capture points
+- User verification prompts
+- Testing and validation
 
-### Address
-```typescript
-interface Address {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  additionalInfo?: string;
-}
-```
+### 3. User Flow
+1. User inputs addresses
+2. Selects services to update
+3. Provides necessary credentials
+4. System performs automated form filling
+5. User verifies and confirms submissions
+6. System tracks and reports status
 
-### Service
-```typescript
-interface Service {
-  id: string;
-  name: string;
-  category: ServiceCategory;
-  hasDirectAPI: boolean;
-  updateMethod: 'API' | 'RPA';
-  requiredFields: string[];
-  automationScript?: string;
-}
-```
+### 4. Monitoring and Support
+- Real-time status tracking
+- Error detection and reporting
+- User support interface
+- Performance monitoring
+- Success rate tracking
 
-## Security Considerations
-1. Data Protection
-   - End-to-end encryption for sensitive data
-   - Secure storage of credentials
-   - Regular security audits
+## Development Priorities
 
-2. Compliance
-   - GDPR compliance
-   - Data privacy regulations
-   - Service provider terms of service
+### Phase 1: Core Infrastructure
+1. Frontend interface
+2. Basic service framework
+3. RPA integration setup
+4. Security implementation
 
-## Development Phases
+### Phase 2: Service Integration
+1. Top 5 utility providers
+2. Major banking services
+3. Essential government services
+4. Postal services
 
-### Phase 1: MVP (4 weeks)
-- Basic chat interface
-- Address input and validation
-- Top 5 service integrations
-- Simple RPA implementation
+### Phase 3: AI Enhancement
+1. Form recognition
+2. Error detection
+3. Learning system
+4. Performance optimization
 
-### Phase 2: Enhancement (4 weeks)
-- Advanced chat features
-- Additional service integrations
-- Improved automation
-- User dashboard
-
-### Phase 3: Scale (4 weeks)
-- Performance optimization
-- Additional service providers
-- Mobile application
-- Analytics and reporting
-
-## Testing Strategy
-1. Unit Testing
-   - Component testing
-   - Service integration testing
-   - RPA script testing
-
-2. Integration Testing
-   - End-to-end flow testing
-   - API integration testing
-   - Performance testing
-
-3. Security Testing
-   - Penetration testing
-   - Vulnerability assessment
-   - Compliance verification
-
-## Deployment Strategy
-1. Infrastructure
-   - Cloud hosting (AWS/GCP)
-   - Container orchestration
-   - CI/CD pipeline
-
-2. Monitoring
-   - Application monitoring
-   - Error tracking
-   - Performance metrics
-   - User analytics
-
-## Future Enhancements
-1. AI/ML Integration
-   - Improved service recommendations
-   - Predictive analytics
-   - Natural language understanding
-
-2. Additional Features
-   - Moving checklist
-   - Service provider recommendations
-   - Integration with moving companies
-   - Digital document management
-
-## Project Timeline
-- Planning and Design: 2 weeks
-- MVP Development: 4 weeks
-- Testing and Iteration: 2 weeks
-- Beta Launch: Week 9
-- Production Release: Week 12
+### Phase 4: Scale and Optimize
+1. Additional service providers
+2. Performance improvements
+3. User experience enhancements
+4. Support system implementation
 
 ## Success Metrics
-1. User Engagement
-   - Number of successful address updates
-   - User satisfaction score
-   - Time saved per user
-
-2. Technical Performance
-   - System uptime
-   - Response time
-   - Automation success rate
-   - Error rate
-
-## Resource Requirements
-1. Development Team
-   - Frontend Developer (2)
-   - Backend Developer (2)
-   - DevOps Engineer (1)
-   - QA Engineer (1)
-   - UI/UX Designer (1)
-
-2. Infrastructure
-   - Cloud services
-   - Development tools
-   - Testing environment
-   - Monitoring tools
+- Service integration success rate
+- User completion rate
+- Error recovery rate
+- User satisfaction metrics
+- System performance metrics

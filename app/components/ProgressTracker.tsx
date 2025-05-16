@@ -1,14 +1,15 @@
 'use client';
 
-import { CheckIcon, ClockIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { useState, useEffect } from 'react';
+import { CheckIcon, ClockIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import { ServiceUpdateResult } from '@/lib/services/types';
 
-type ServiceStatus = {
+type Service = {
   id: string;
   name: string;
   category: string;
-  status: 'pending' | 'completed' | 'failed';
-  message?: string;
-  lastUpdated: Date;
+  reference?: string;
+  credentials?: Record<string, string>;
 };
 
 // Helper function for consistent time formatting
@@ -23,98 +24,193 @@ const formatDateTime = (date: Date): string => {
 };
 
 type ProgressTrackerProps = {
-  services: ServiceStatus[];
+  services: Service[];
 };
 
 export default function ProgressTracker({ services }: ProgressTrackerProps) {
-  // Calculate progress statistics
-  const totalServices = services.length;
-  const completedServices = services.filter(s => s.status === 'completed').length;
-  const pendingServices = services.filter(s => s.status === 'pending').length;
-  const failedServices = services.filter(s => s.status === 'failed').length;
-  
-  const progressPercentage = Math.round((completedServices / totalServices) * 100) || 0;
-  
+  const [serviceStatuses, setServiceStatuses] = useState<Record<string, ServiceUpdateResult>>({});
+  const [isPolling, setIsPolling] = useState(true);
+
+  useEffect(() => {
+    // Initialize statuses
+    const initialStatuses: Record<string, ServiceUpdateResult> = {};
+    services.forEach(service => {
+      initialStatuses[service.id] = {
+        success: false,
+        message: 'Waiting to start...',
+      };
+    });
+    setServiceStatuses(initialStatuses);
+
+    // Start polling for updates
+    const pollInterval = setInterval(async () => {
+      let allCompleted = true;
+
+      for (const service of services) {
+        if (!service.reference) continue;
+
+        try {
+          const response = await fetch('/api/services/check-status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              serviceId: service.id,
+              reference: service.reference,
+            }),
+          });
+
+          const data = await response.json();
+
+          setServiceStatuses(prev => ({
+            ...prev,
+            [service.id]: data,
+          }));
+
+          if (!data.success) {
+            allCompleted = false;
+          }
+        } catch (error) {
+          console.error(`Failed to check status for ${service.name}:`, error);
+          allCompleted = false;
+        }
+      }
+
+      if (allCompleted) {
+        setIsPolling(false);
+        clearInterval(pollInterval);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    return () => {
+      clearInterval(pollInterval);
+      setIsPolling(false);
+    };
+  }, [services]);
+
+  const getStatusIcon = (status: ServiceUpdateResult) => {
+    if (status.success) {
+      return <CheckIcon className="w-5 h-5 text-green-500" />;
+    }
+    if (status.error) {
+      return <XMarkIcon className="w-5 h-5 text-red-500" />;
+    }
+    return <ClockIcon className="w-5 h-5 text-yellow-500 animate-pulse" />;
+  };
+
+  const getStatusColor = (status: ServiceUpdateResult) => {
+    if (status.success) return 'bg-green-50 border-green-200 text-green-700';
+    if (status.error) return 'bg-red-50 border-red-200 text-red-700';
+    return 'bg-yellow-50 border-yellow-200 text-yellow-700';
+  };
+
+  const getStatusText = (status: ServiceUpdateResult) => {
+    if (status.success) return 'Completed';
+    if (status.error) return 'Failed';
+    return 'In Progress';
+  };
+
+  const handleRetry = async (serviceId: string) => {
+    try {
+      const response = await fetch('/api/services/retry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          serviceId,
+          reference: services.find(s => s.id === serviceId)?.reference,
+        }),
+      });
+
+      if (response.ok) {
+        setServiceStatuses(prev => ({
+          ...prev,
+          [serviceId]: {
+            success: false,
+            message: 'Retrying update...',
+          },
+        }));
+        setIsPolling(true);
+      }
+    } catch (error) {
+      console.error('Failed to retry service:', error);
+    }
+  };
+
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-semibold mb-6">Address Change Progress</h2>
-      
-      <div className="mb-8">
-        <div className="flex justify-between mb-2">
-          <span className="text-gray-700 font-medium">Overall Progress</span>
-          <span className="text-gray-700 font-medium">{progressPercentage}%</span>
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200">
+        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Address Update Progress</h2>
+          {isPolling && (
+            <div className="flex items-center mt-2 text-sm text-gray-600">
+              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+              Checking status every 5 seconds...
+            </div>
+          )}
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div 
-            className="bg-blue-600 h-2.5 rounded-full" 
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
-        </div>
-        
-        <div className="flex justify-between mt-4 text-sm">
-          <div className="text-center">
-            <div className="text-gray-500">Total</div>
-            <div className="font-semibold text-gray-800 text-lg">{totalServices}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-green-500">Completed</div>
-            <div className="font-semibold text-green-600 text-lg">{completedServices}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-blue-500">Pending</div>
-            <div className="font-semibold text-blue-600 text-lg">{pendingServices}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-red-500">Failed</div>
-            <div className="font-semibold text-red-600 text-lg">{failedServices}</div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="border-t pt-6">
-        <h3 className="text-xl font-medium mb-4">Service Updates</h3>
-        
-        <div className="space-y-4">
-          {services.map(service => (
-            <div 
-              key={service.id}
-              className="border rounded-lg p-4"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center">
-                    {service.status === 'completed' && (
-                      <CheckIcon className="h-5 w-5 text-green-500 mr-2" />
-                    )}
-                    {service.status === 'pending' && (
-                      <ClockIcon className="h-5 w-5 text-blue-500 mr-2" />
-                    )}
-                    {service.status === 'failed' && (
-                      <XMarkIcon className="h-5 w-5 text-red-500 mr-2" />
-                    )}
-                    <h4 className="font-medium">{service.name}</h4>
+
+        <div className="divide-y divide-gray-200">
+          {services.map(service => {
+            const status = serviceStatuses[service.id] || { success: false };
+            return (
+              <div key={service.id} className={`p-6 ${getStatusColor(status)}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 mt-1">
+                      {getStatusIcon(status)}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">{service.name}</h3>
+                      <p className="text-sm mt-1">
+                        {status.message || 'Initializing...'}
+                      </p>
+                    </div>
                   </div>
-                  {service.message && (
-                    <p className="text-sm text-gray-600 mt-1 ml-7">{service.message}</p>
-                  )}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {formatDateTime(service.lastUpdated)}
+                  <div className="flex items-center space-x-4">
+                    {status.error && (
+                      <button
+                        onClick={() => handleRetry(service.id)}
+                        className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <ArrowPathIcon className="w-4 h-4 mr-1" />
+                        Retry
+                      </button>
+                    )}
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      status.success ? 'bg-green-100 text-green-800' :
+                      status.error ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {getStatusText(status)}
+                    </span>
+                  </div>
                 </div>
               </div>
-              
-              {service.status === 'failed' && (
-                <div className="mt-3 flex justify-end">
-                  <button
-                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {!isPolling && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center text-green-700">
+                <CheckIcon className="w-5 h-5 mr-2" />
+                <p className="text-sm font-medium">
+                  All updates completed successfully
+                </p>
+              </div>
+              <button
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={() => window.location.href = '/dashboard'}
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
